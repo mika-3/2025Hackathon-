@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SoundSpace Generator</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: black; }
+    #info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+<div id="info">Tap to Start 🎧</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+let scene = new THREE.Scene();
+let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+let renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+camera.position.z = 20;
+
+let objects = [];
+
+function createSphere(size) {
+    let geometry = new THREE.SphereGeometry(size, 32, 32);
+    let material = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(Math.random(), Math.random(), Math.random()),
+        emissive: 0x222222
+    });
+    let sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(
+        (Math.random()-0.5)*20,
+        (Math.random()-0.5)*20,
+        (Math.random()-0.5)*20
+    );
+    scene.add(sphere);
+    objects.push(sphere);
+}
+
+let light = new THREE.PointLight(0xffffff, 2, 100);
+light.position.set(10,10,10);
+scene.add(light);
+
+let ambient = new THREE.AmbientLight(0x404040);
+scene.add(ambient);
+
+function animate() {
+    requestAnimationFrame(animate);
+    objects.forEach(obj => {
+        obj.rotation.x += 0.01;
+        obj.rotation.y += 0.01;
+    });
+    renderer.render(scene, camera);
+}
+animate();
+
+async function startAudio() {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioContext = new AudioContext();
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+    source.connect(analyser);
+    analyser.fftSize = 256;
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    function analyze() {
+        analyser.getByteFrequencyData(dataArray);
+        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
+
+        if(avg > 50){
+            createSphere(avg / 30);
+        }
+
+        requestAnimationFrame(analyze);
+    }
+
+    analyze();
+}
+
+document.body.addEventListener("click", startAudio);
+</script>
+</body>
+</html>
