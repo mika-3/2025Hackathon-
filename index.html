@@ -3,44 +3,63 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sound→World (Lv1)</title>
+  <title>Sound→World (Lv1 Debug)</title>
   <style>
-    body { font-family: system-ui; margin: 16px; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    canvas { width: 100%; max-width: 900px; height: auto; border: 1px solid #ddd; border-radius: 12px; }
-    .card { padding:12px; border:1px solid #eee; border-radius:12px; }
-    button { padding:10px 14px; border-radius:10px; border:1px solid #ddd; background:#fff; }
-    select, input { padding:10px; border-radius:10px; border:1px solid #ddd; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 16px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .card { padding:12px; border:1px solid #eee; border-radius:12px; margin-top:12px; }
+    button, select, input { padding:10px 12px; border-radius:10px; border:1px solid #ddd; background:#fff; }
+    canvas { width:100%; max-width:900px; height:auto; border:1px solid #ddd; border-radius:12px; }
     .small { color:#666; font-size:12px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; white-space:pre-wrap; }
+    .ok { color:#0a7a0a; font-weight:600; }
+    .ng { color:#b00020; font-weight:600; }
   </style>
 </head>
 <body>
-  <h2>🎧 Sound → World（レベル1：観賞型）</h2>
+  <h2>🎧 Sound → World（レベル1：観賞型 / Debug版）</h2>
 
   <div class="card">
     <div class="row">
       <input type="file" id="audio" accept="audio/*" />
-      <button id="analyzeBtn">解析（いまはダミー）</button>
+      <button id="analyzeBtn">解析（ダミー結果で生成）</button>
       <select id="preset">
         <option value="forest">森（鳥/風）</option>
         <option value="city">都会（車/人）</option>
         <option value="sea">海（波/カモメ）</option>
       </select>
+      <button id="forceForest">強制:森</button>
+      <button id="forceCity">強制:都会</button>
+      <button id="forceSea">強制:海</button>
     </div>
-    <div class="small">※ 今はダミー結果で世界を生成。次にAI推論APIと接続します。</div>
+    <div class="small">
+      まず「強制:都会」を押して Scene が city になるか確認してください。  
+      変わらなければ JS が動いていない/ボタンID不一致の可能性が高いです。
+    </div>
   </div>
 
-  <div class="card" style="margin-top:12px;">
+  <div class="card">
     <div class="row">
       <div>Scene: <b id="sceneLabel">-</b></div>
       <div>Items: <b id="itemsLabel">-</b></div>
+      <div>Status: <b id="statusLabel">-</b></div>
     </div>
+    <div class="small">Status が <span class="ok">OK</span> なら game.js が読み込めています。</div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="toggleDebug">Debugログ: ON/OFF</button>
+      <button id="panicReset">リセット</button>
+    </div>
+    <div id="log" class="mono"></div>
   </div>
 
   <div style="margin-top:12px;">
     <canvas id="c" width="900" height="450"></canvas>
   </div>
 
+  <!-- 読み込み確認用：ここが重要 -->
   <script src="./game.js"></script>
 </body>
 </html>
