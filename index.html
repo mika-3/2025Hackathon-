@@ -1,92 +1,46 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>SoundSpace Generator</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sound→World (Lv1)</title>
   <style>
-    body { margin: 0; overflow: hidden; background: black; }
-    #info {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      color: white;
-      font-family: sans-serif;
-    }
+    body { font-family: system-ui; margin: 16px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    canvas { width: 100%; max-width: 900px; height: auto; border: 1px solid #ddd; border-radius: 12px; }
+    .card { padding:12px; border:1px solid #eee; border-radius:12px; }
+    button { padding:10px 14px; border-radius:10px; border:1px solid #ddd; background:#fff; }
+    select, input { padding:10px; border-radius:10px; border:1px solid #ddd; }
+    .small { color:#666; font-size:12px; }
   </style>
 </head>
 <body>
-<div id="info">Tap to Start 🎧</div>
+  <h2>🎧 Sound → World（レベル1：観賞型）</h2>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <div class="card">
+    <div class="row">
+      <input type="file" id="audio" accept="audio/*" />
+      <button id="analyzeBtn">解析（いまはダミー）</button>
+      <select id="preset">
+        <option value="forest">森（鳥/風）</option>
+        <option value="city">都会（車/人）</option>
+        <option value="sea">海（波/カモメ）</option>
+      </select>
+    </div>
+    <div class="small">※ 今はダミー結果で世界を生成。次にAI推論APIと接続します。</div>
+  </div>
 
-<script>
-let scene = new THREE.Scene();
-let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-let renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+  <div class="card" style="margin-top:12px;">
+    <div class="row">
+      <div>Scene: <b id="sceneLabel">-</b></div>
+      <div>Items: <b id="itemsLabel">-</b></div>
+    </div>
+  </div>
 
-camera.position.z = 20;
+  <div style="margin-top:12px;">
+    <canvas id="c" width="900" height="450"></canvas>
+  </div>
 
-let objects = [];
-
-function createSphere(size) {
-    let geometry = new THREE.SphereGeometry(size, 32, 32);
-    let material = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(Math.random(), Math.random(), Math.random()),
-        emissive: 0x222222
-    });
-    let sphere = new THREE.Mesh(geometry, material);
-    sphere.position.set(
-        (Math.random()-0.5)*20,
-        (Math.random()-0.5)*20,
-        (Math.random()-0.5)*20
-    );
-    scene.add(sphere);
-    objects.push(sphere);
-}
-
-let light = new THREE.PointLight(0xffffff, 2, 100);
-light.position.set(10,10,10);
-scene.add(light);
-
-let ambient = new THREE.AmbientLight(0x404040);
-scene.add(ambient);
-
-function animate() {
-    requestAnimationFrame(animate);
-    objects.forEach(obj => {
-        obj.rotation.x += 0.01;
-        obj.rotation.y += 0.01;
-    });
-    renderer.render(scene, camera);
-}
-animate();
-
-async function startAudio() {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const audioContext = new AudioContext();
-    const source = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
-    source.connect(analyser);
-    analyser.fftSize = 256;
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-    function analyze() {
-        analyser.getByteFrequencyData(dataArray);
-        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
-
-        if(avg > 50){
-            createSphere(avg / 30);
-        }
-
-        requestAnimationFrame(analyze);
-    }
-
-    analyze();
-}
-
-document.body.addEventListener("click", startAudio);
-</script>
+  <script src="./game.js"></script>
 </body>
 </html>
